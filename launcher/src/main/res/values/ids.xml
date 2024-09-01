@@ -1,0 +1,5 @@
+<!-- res/values/ids.xml -->
+<resources>
+	<item name="delete" type="id"/>
+	<item name="cancel" type="id"/>
+</resources>

@@ -29,7 +29,10 @@ import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.fragment.app.Fragment;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -55,10 +58,7 @@ import java.util.Date;
 public class ApplicationFragment extends Fragment implements View.OnClickListener, View.OnLongClickListener {
 	public static final String TAG = "ApplicationFragment";
 	private static final String PREFERENCES_NAME = "applications";
-	private static final int REQUEST_CODE_APPLICATION_LIST = 0x1E;
 	private static final int REQUEST_CODE_WALLPAPER = 0x1F;
-	private static final int REQUEST_CODE_APPLICATION_START = 0x20;
-	private static final int REQUEST_CODE_PREFERENCES = 0x21;
 
 	private TextView mClock;
 	private TextView mDate;
@@ -66,7 +66,7 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	private DateFormat mDateFormat;
 	private TextView mBatteryLevel;
 	private ImageView mBatteryIcon;
-	private BroadcastReceiver mBatteryChangedReceiver = new BroadcastReceiver(){
+	private BroadcastReceiver mBatteryChangedReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			final int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
@@ -95,6 +95,9 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	private View mGridView;
 	private Setup mSetup;
 
+	private ActivityResultLauncher<Intent> preferencesLauncher;
+	private ActivityResultLauncher<Intent> applicationListLauncher;
+	private ActivityResultLauncher<Intent> applicationStartLauncher;
 
 	public ApplicationFragment() {
 		// Required empty public constructor
@@ -102,6 +105,48 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 
 	public static ApplicationFragment newInstance() {
 		return new ApplicationFragment();
+	}
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		// Инициализируем launchers для новых API
+		preferencesLauncher = registerForActivityResult(
+				new ActivityResultContracts.StartActivityForResult(),
+				result -> {
+					if (result.getResultCode() == Activity.RESULT_OK) {
+						restartActivity();
+					}
+				}
+		);
+
+		applicationListLauncher = registerForActivityResult(
+				new ActivityResultContracts.StartActivityForResult(),
+				result -> {
+					if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+						String packageName = result.getData().getStringExtra(ApplicationList.PACKAGE_NAME);
+						openApplication(packageName);
+					}
+				}
+		);
+
+		applicationStartLauncher = registerForActivityResult(
+				new ActivityResultContracts.StartActivityForResult(),
+				result -> {
+					if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+						Bundle extra = result.getData().getExtras();
+						int appNum = result.getData().getExtras().getInt(ApplicationList.APPLICATION_NUMBER);
+
+						if (extra.containsKey(ApplicationList.DELETE) && extra.getBoolean(ApplicationList.DELETE)) {
+							writePreferences(appNum, null);
+						} else {
+							writePreferences(appNum, result.getData().getStringExtra(ApplicationList.PACKAGE_NAME));
+						}
+						updateApplications();
+					}
+				}
+		);
 	}
 
 	@Override
@@ -340,7 +385,7 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 			if (appView.hasPackage() && mSetup.iconsLocked()) {
 				Toast.makeText(getActivity(), R.string.home_locked, Toast.LENGTH_SHORT).show();
 			} else {
-				openApplicationList(ApplicationList.VIEW_LIST, appView.getPosition(), appView.hasPackage(), REQUEST_CODE_APPLICATION_LIST);
+				openApplicationList(ApplicationList.VIEW_LIST, appView.getPosition(), appView.hasPackage());
 			}
 			return (true);
 		}
@@ -354,22 +399,18 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 			return;
 		}
 
-		switch (v.getId()) {
-			case R.id.application_grid: {
-				openApplicationList(ApplicationList.VIEW_GRID, 0, false, REQUEST_CODE_APPLICATION_START);
-			}
-			break;
-
-			case R.id.settings:
-				startActivityForResult(new Intent(getContext(), Preferences.class), REQUEST_CODE_PREFERENCES);
-				break;
+		int id = v.getId();
+		if (id == R.id.application_grid) {
+			openApplicationList(ApplicationList.VIEW_GRID, 0, false);
+		} else if (id == R.id.settings) {
+			Intent intent = new Intent(getContext(), Preferences.class);
+			preferencesLauncher.launch(intent);
 		}
-
 	}
 
 	private void openApplication(ApplicationView v) {
 		if (v.hasPackage() == false) {
-			openApplicationList(ApplicationList.VIEW_LIST, v.getPosition(), false, REQUEST_CODE_APPLICATION_LIST);
+			openApplicationList(ApplicationList.VIEW_LIST, v.getPosition(), false);
 			return;
 		}
 
@@ -391,55 +432,23 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 		}
 	}
 
-	private void openApplicationList(int viewType, int appNum, boolean showDelete, int requestCode) {
+	private void openApplicationList(int viewType, int appNum, boolean showDelete) {
 		Intent intent = new Intent(getActivity(), ApplicationList.class);
 		intent.putExtra(ApplicationList.APPLICATION_NUMBER, appNum);
 		intent.putExtra(ApplicationList.VIEW_TYPE, viewType);
 		intent.putExtra(ApplicationList.SHOW_DELETE, showDelete);
-		startActivityForResult(intent, requestCode);
+		applicationListLauncher.launch(intent);
 	}
-	
+
 	private Intent getLaunchIntentForPackage(String packageName) {
 		PackageManager pm = getActivity().getPackageManager();
 		Intent launchIntent = pm.getLaunchIntentForPackage(packageName);
-		
-		if(launchIntent == null) {
+
+		if (launchIntent == null) {
 			launchIntent = pm.getLeanbackLaunchIntentForPackage(packageName);
 		}
-		
-		return launchIntent;			
+
+		return launchIntent;
 	}
-
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-		super.onActivityResult(requestCode, resultCode, intent);
-		switch (requestCode) {
-			case REQUEST_CODE_WALLPAPER:
-				break;
-			case REQUEST_CODE_PREFERENCES:
-				restartActivity();
-				break;
-			case REQUEST_CODE_APPLICATION_START:
-				if (intent != null)
-					openApplication(intent.getExtras().getString(ApplicationList.PACKAGE_NAME));
-				break;
-			case REQUEST_CODE_APPLICATION_LIST:
-				if (resultCode == Activity.RESULT_OK) {
-					Bundle extra = intent.getExtras();
-					int appNum = intent.getExtras().getInt(ApplicationList.APPLICATION_NUMBER);
-
-					if (extra.containsKey(ApplicationList.DELETE) && extra.getBoolean(ApplicationList.DELETE)) {
-						writePreferences(appNum, null);
-					} else {
-						writePreferences(appNum,
-								intent.getExtras().getString(ApplicationList.PACKAGE_NAME)
-						);
-					}
-					updateApplications();
-				}
-				break;
-		}
-	}
-
-
 }
+

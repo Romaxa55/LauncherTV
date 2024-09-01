@@ -21,8 +21,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import android.support.annotation.NonNull;
-
+import androidx.annotation.NonNull;
 
 public class AppInfo {
 	private final Drawable mIcon;
