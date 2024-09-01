@@ -28,8 +28,8 @@ import static org.cosinus.launchertv.activities.Preferences.PREFERENCE_TRANSPARE
 
 
 public class Setup {
-	private static final int DEFAULT_GRID_X = 2;
-	private static final int DEFAULT_GRID_Y = 1;
+	private static final int FIXED_GRID_X = 2;  // Постоянное значение для сетки по X
+	private static final int FIXED_GRID_Y = 1;
 	private static final int DEFAULT_MARGIN_X = 5;
 	private static final int DEFAULT_MARGIN_Y = 5;
 
@@ -124,11 +124,11 @@ public class Setup {
 
 
 	public int getGridX() {
-		return getInt(Preferences.PREFERENCE_GRID_X, DEFAULT_GRID_X);
+		return FIXED_GRID_X;
 	}
 
 	public int getGridY() {
-		return getInt(Preferences.PREFERENCE_GRID_Y, DEFAULT_GRID_Y);
+		return FIXED_GRID_Y;
 	}
 
 	public int getMarginX() {
