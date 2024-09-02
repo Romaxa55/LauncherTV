@@ -25,7 +25,6 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.BatteryManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,20 +63,6 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	private TextView mDate;
 	private DateFormat mTimeFormat;
 	private DateFormat mDateFormat;
-	private TextView mBatteryLevel;
-	private ImageView mBatteryIcon;
-	private BroadcastReceiver mBatteryChangedReceiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			final int level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
-			mBatteryLevel.setText(
-					String.format(getResources().getString(R.string.battery_level_text), level)
-			);
-			final int batteryIconId = intent.getIntExtra(BatteryManager.EXTRA_ICON_SMALL, 0);
-			mBatteryIcon.setImageDrawable(getResources().getDrawable(batteryIconId));
-		}
-	};
-	private boolean mBatteryChangedReceiverRegistered = false;
 
 	private final Handler mHandler = new Handler();
 	private final Runnable mTimerTick = new Runnable() {
@@ -159,9 +144,6 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 		mGridView = view.findViewById(R.id.application_grid);
 		mClock = (TextView) view.findViewById(R.id.clock);
 		mDate = (TextView) view.findViewById(R.id.date);
-		final LinearLayout batteryLayout = (LinearLayout) view.findViewById(R.id.battery_layout);
-		mBatteryLevel = (TextView) view.findViewById(R.id.battery_level);
-		mBatteryIcon = (ImageView) view.findViewById(R.id.battery_icon);
 
 		mTimeFormat = android.text.format.DateFormat.getTimeFormat(getActivity());
 		mDateFormat = android.text.format.DateFormat.getLongDateFormat(getActivity());
@@ -172,17 +154,6 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 		if (mSetup.showDate() == false)
 			mDate.setVisibility(View.GONE);
 
-		if (mSetup.showBattery()) {
-			batteryLayout.setVisibility(View.VISIBLE);
-			getActivity().registerReceiver(this.mBatteryChangedReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-			mBatteryChangedReceiverRegistered = true;
-		} else {
-			batteryLayout.setVisibility(View.INVISIBLE);
-			if (mBatteryChangedReceiverRegistered) {
-				getActivity().unregisterReceiver(this.mBatteryChangedReceiver);
-				mBatteryChangedReceiverRegistered = false;
-			}
-		}
 
 		mSettings.setOnClickListener(this);
 		mGridView.setOnClickListener(this);
@@ -307,10 +278,7 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 
 
 	private void restartActivity() {
-		if (mBatteryChangedReceiverRegistered) {
-			getActivity().unregisterReceiver(mBatteryChangedReceiver);
-			mBatteryChangedReceiverRegistered = false;
-		}
+
 		Intent intent = getActivity().getIntent();
 		getActivity().finish();
 		startActivity(intent);
@@ -355,10 +323,7 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	public void onStart() {
 		super.onStart();
 		setClock();
-		if (mSetup.showBattery() && !mBatteryChangedReceiverRegistered) {
-			getActivity().registerReceiver(this.mBatteryChangedReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
-			mBatteryChangedReceiverRegistered = true;
-		}
+
 		mHandler.postDelayed(mTimerTick, 1000);
 	}
 
@@ -366,9 +331,7 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	public void onPause() {
 		super.onPause();
 		mHandler.removeCallbacks(mTimerTick);
-		if (mBatteryChangedReceiverRegistered) {
-			getActivity().unregisterReceiver(this.mBatteryChangedReceiver);
-		}
+
 	}
 
 	private void setClock() {

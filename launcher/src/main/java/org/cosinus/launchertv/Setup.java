@@ -79,7 +79,7 @@ public class Setup {
 
 	public boolean keepScreenOn() {
 		try {
-			return (getPreferences().getBoolean(Preferences.PREFERENCE_SCREEN_ON, false));
+			return (getPreferences().getBoolean(Preferences.PREFERENCE_SCREEN_ON, true));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -102,15 +102,6 @@ public class Setup {
 			e.printStackTrace();
 		}
 		return (true);
-	}
-
-	public boolean showBattery() {
-		try {
-			return (getPreferences().getBoolean(Preferences.PREFERENCE_SHOW_BATTERY, false));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return (false);
 	}
 
 	public boolean showNames() {

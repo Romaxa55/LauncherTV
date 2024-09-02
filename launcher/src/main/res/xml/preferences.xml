@@ -18,7 +18,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 	<PreferenceCategory android:title="@string/app_name">
 		<CheckBoxPreference
-			android:defaultValue="false"
+			android:defaultValue="true"
 			android:key="preference_screen_always_on"
 			android:summary="@string/summary_screen_always_on"
 			android:title="@string/title_screen_always_on"/>
@@ -27,11 +27,6 @@
 			android:key="preference_show_date"
 			android:summary="@string/summary_show_date"
 			android:title="@string/title_show_date"/>
-		<CheckBoxPreference
-			android:defaultValue="false"
-			android:key="preference_show_battery"
-			android:summary="@string/summary_show_battery_information"
-			android:title="@string/title_show_battery_information"/>
 		<CheckBoxPreference
 			android:defaultValue="true"
 			android:key="preference_show_name"
@@ -102,15 +97,6 @@
 			android:summary="@string/summary_system"
 			android:title="@string/title_system">
 			<intent android:action="android.settings.SETTINGS"/>
-		</Preference>
-	</PreferenceCategory>
-	<PreferenceCategory android:title="@string/about">
-		<Preference
-			android:key="preference_about"
-			android:title="@string/app_name"/>
-		<Preference
-			android:key="preference_github"
-			android:title="@string/title_github">
 		</Preference>
 	</PreferenceCategory>
 </PreferenceScreen>
