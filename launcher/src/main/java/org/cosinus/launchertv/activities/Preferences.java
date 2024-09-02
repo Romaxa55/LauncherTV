@@ -38,10 +38,7 @@ public class Preferences extends PreferenceActivity {
 	public static final String PREFERENCE_DEFAULT_TRANSPARENCY = "preference_default_transparency";
 	public static final String PREFERENCE_TRANSPARENCY = "preference_transparency";
 	public static final String PREFERENCE_SCREEN_ON = "preference_screen_always_on";
-	public static final String PREFERENCE_SHOW_DATE = "preference_show_date";
 	public static final String PREFERENCE_SHOW_NAME = "preference_show_name";
-	public static final String PREFERENCE_MARGIN_X = "preference_margin_x";
-	public static final String PREFERENCE_MARGIN_Y = "preference_margin_y";
 	public static final String PREFERENCE_LOCKED = "preference_locked";
 
 	@Override
@@ -51,15 +48,22 @@ public class Preferences extends PreferenceActivity {
 		Setup setup = new Setup(this);
 		addPreferencesFromResource(R.xml.preferences);
 
-		findPreference(PREFERENCE_TRANSPARENCY).setEnabled(!setup.isDefaultTransparency());
-		findPreference(PREFERENCE_DEFAULT_TRANSPARENCY).setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object newValue) {
-				findPreference(PREFERENCE_TRANSPARENCY).setEnabled(!(boolean) newValue);
+		// Найдите предпочтение для изменения фона
+		Preference backgroundPreference = findPreference("preference_background");
+		if (backgroundPreference != null) {
+			backgroundPreference.setOnPreferenceClickListener(preference -> {
+				// Создайте Intent для установки обоев
+				Intent intent = new Intent(Intent.ACTION_SET_WALLPAPER);
+				if (intent.resolveActivity(getPackageManager()) != null) {
+					// Если активность найдена, запустите ее
+					startActivity(intent);
+				} else {
+					// Если активности нет, покажите сообщение
+					Toast.makeText(this, "Need install WALLPAPER MANAGER", Toast.LENGTH_SHORT).show();
+				}
 				return true;
-			}
-		});
-
+			});
+		}
 	}
 
 

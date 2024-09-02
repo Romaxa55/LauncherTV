@@ -335,9 +335,21 @@ public class ApplicationFragment extends Fragment implements View.OnClickListene
 	}
 
 	private void setClock() {
+		// Получаем текущую дату и время
 		Date date = new Date(System.currentTimeMillis());
-		mClock.setText(mTimeFormat.format(date));
+
+		// Проверяем, используется ли 24-часовой формат
+		boolean is24HourFormat = android.text.format.DateFormat.is24HourFormat(getContext());
+
+		// Устанавливаем формат времени в зависимости от настроек устройства
+		java.text.DateFormat timeFormat = is24HourFormat ?
+				new java.text.SimpleDateFormat("HH:mm:ss") :
+				new java.text.SimpleDateFormat("hh:mm:ss a");
+
+		mClock.setText(timeFormat.format(date));
 		mDate.setText(mDateFormat.format(date));
+
+		// Обновляем время каждую секунду
 		mHandler.postDelayed(mTimerTick, 1000);
 	}
 

@@ -61,7 +61,7 @@ public class Setup {
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	public boolean isDefaultTransparency() {
 		try {
-			return (getPreferences().getBoolean(PREFERENCE_DEFAULT_TRANSPARENCY, true));
+			return (true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -70,7 +70,7 @@ public class Setup {
 
 	public float getTransparency() {
 		try {
-			return (getPreferences().getFloat(PREFERENCE_TRANSPARENCY, 0.5F));
+			return (0.5F);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -79,11 +79,11 @@ public class Setup {
 
 	public boolean keepScreenOn() {
 		try {
-			return (getPreferences().getBoolean(Preferences.PREFERENCE_SCREEN_ON, true));
+			return (true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		return (false);
+		return (true);
 	}
 
 	public boolean iconsLocked() {
@@ -97,7 +97,7 @@ public class Setup {
 
 	public boolean showDate() {
 		try {
-			return (getPreferences().getBoolean(Preferences.PREFERENCE_SHOW_DATE, true));
+			return (true);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -123,10 +123,10 @@ public class Setup {
 	}
 
 	public int getMarginX() {
-		return getInt(Preferences.PREFERENCE_MARGIN_X, DEFAULT_MARGIN_X);
+		return DEFAULT_MARGIN_X;
 	}
 
 	public int getMarginY() {
-		return getInt(Preferences.PREFERENCE_MARGIN_Y, DEFAULT_MARGIN_Y);
+		return DEFAULT_MARGIN_Y;
 	}
 }

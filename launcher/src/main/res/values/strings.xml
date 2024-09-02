@@ -44,4 +44,6 @@
 	<string name="home_locked">Icon is locked by settings</string>
 	<string name="summary_locked">Prevent icons to be accidentally removed</string>
 	<string name="title_locked">Lock icons</string>
+	<string name="live_wallpaper_description">Live Wallpapers</string>
+	<string name="live_wallpaper_label">Wallpaper</string>
 </resources>

@@ -36,5 +36,6 @@
 
 		<activity android:name=".activities.ApplicationList"/>
 		<activity android:name=".activities.Preferences"/>
+
 	</application>
 </manifest>
